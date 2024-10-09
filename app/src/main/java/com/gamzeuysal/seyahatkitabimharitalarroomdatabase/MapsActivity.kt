@@ -59,7 +59,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap = googleMap
 
         //casting
-         locationManager = this.getSystemService(Context.LOCALE_SERVICE) as LocationManager
+         locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         //locationManager = (LocationManager)this.getSystemService(Context.LOCALE_SERVICE)
         //kullanıcı konum degistirdikce sen de degistir
         locationListener = object : LocationListener {
