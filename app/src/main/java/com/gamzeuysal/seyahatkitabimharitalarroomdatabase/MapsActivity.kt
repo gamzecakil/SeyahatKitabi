@@ -8,6 +8,7 @@ import android.location.LocationManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,6 +34,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private  lateinit var locationListener : LocationListener
     //verilen izni yakalama  --> sistemde izinler string olarak saklanıyor.-->ACCESS_FINE_LOCATION"
     private lateinit var permissionLauncher : ActivityResultLauncher<String>
+    private val TAG = "MapsActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,12 +66,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         //kullanıcı konum degistirdikce sen de degistir
         locationListener = object : LocationListener {
             override fun onLocationChanged(location : Location) {
-              println("location :$location")
+                 Log.d(TAG,"LOCATION : $location")
+                 val userLocation = LatLng(location.latitude,location.longitude)
+                // mMap.addMarker(MarkerOptions().position(userLocation).title("Guncel Konum"))
+                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation,15f))
+
+
+
             }
         }
         //ilk önce gerekli izin verilmiş mi kontrol edelim.
         if(ContextCompat.checkSelfPermission(this,android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
+             Log.d(TAG,"PERMISSION DENIED onMapReady.")
             //not permission
             if(ActivityCompat.shouldShowRequestPermissionRationale(this,android.Manifest.permission.ACCESS_FINE_LOCATION)) //--> calısma kararı androidin sitemi karar verir.
             {
@@ -77,18 +86,25 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 Snackbar.make(binding.root,"Permission needed for location",Snackbar.LENGTH_INDEFINITE).setAction("Give Permission"){
                     //setAction ile  belirlenen butona tıklanırsa ne olacak
                     //request permission
+                    //izin isteme mesaj kutusu
                     permissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
                 }.show()
             }else{
                 //request permission
+                Log.d(TAG,"PERMISSION LAUNCH.")
+                //izin isteme mesaj kutusu
                 permissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
             }
 
         }else{
             //permission granted
             //konum güncellemelerini al
-            locationManager?.let {
-                locationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0f,locationListener)
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0f,locationListener)
+
+            val lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            lastLocation?.let {
+                val lastUserLocation = LatLng(lastLocation.latitude,lastLocation.longitude)
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastUserLocation,15f))
             }
 
         }
@@ -111,20 +127,26 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
       permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()){ result ->
 
 
-
+       Log.d(TAG,"RESULT : ${result}")
           if(result)
           {
               //permission granted
               if(ContextCompat.checkSelfPermission(this,android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
               {
-                  locationManager?.let {
                       locationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0f,locationListener)
-                  }
+              }
+              Log.d(TAG,"PERMISSION GRANTED onCreate.")
+
+              val lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+              lastLocation?.let {
+                  val lastUserLocation = LatLng(lastLocation.latitude,lastLocation.longitude)
+                  mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastUserLocation,15f))
               }
 
           }else{
               //permission  denied
               Toast.makeText(this@MapsActivity,"Permission needed!",Toast.LENGTH_LONG).show()
+              Log.d(TAG,"PERMISSION DENIED onCreate.")
           }
       }
     }
