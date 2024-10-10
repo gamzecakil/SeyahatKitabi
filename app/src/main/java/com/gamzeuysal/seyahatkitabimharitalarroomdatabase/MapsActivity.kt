@@ -26,7 +26,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.gamzeuysal.seyahatkitabimharitalarroomdatabase.databinding.ActivityMapsBinding
 import com.google.android.material.snackbar.Snackbar
 
-class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
+class MapsActivity : AppCompatActivity(), OnMapReadyCallback ,GoogleMap.OnMapLongClickListener{
 
     private lateinit var mMap: GoogleMap
     private lateinit var binding: ActivityMapsBinding
@@ -39,6 +39,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     //Güncel konumu almayı bir kez çalıştırma
     private lateinit var sharedPreferences: SharedPreferences
     private var trackBoolean : Boolean? = null
+    //marker eklenen konumu alma
+    private var selectedLatitude : Double? = null
+    private var selectedLongitude :Double? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +59,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         ActivityCompat.requestPermissions(this,permission,0)
          */
 
+        selectedLatitude = 0.0
+        selectedLongitude = 0.0
+
         sharedPreferences = this.getSharedPreferences("com.gamzeuysal.seyahatkitabimharitalarroomdatabase", MODE_PRIVATE)
         trackBoolean = false
 
@@ -67,6 +73,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+
+        mMap.setOnMapLongClickListener (this) //GoogleMap.OnMapLongClickListener implementasyonu ile benim Activityde listener oldu.this --> MapsActivity
 
         //casting
          locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -166,7 +174,22 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
               //permission  denied
               Toast.makeText(this@MapsActivity,"Permission needed!",Toast.LENGTH_LONG).show()
               Log.d(TAG,"PERMISSION DENIED onCreate.")
+
+
+
           }
       }
+    }
+
+    //her uzun tıkladıgımızda çalısır.
+    override fun onMapLongClick(p0: LatLng) {
+
+        //daha önce eklenmiş marker varsa sil
+        mMap.clear()
+       //po --> uzun tıklanıldıgında verilen LatLng yani location
+        mMap.addMarker(MarkerOptions().position(p0))
+        
+        selectedLatitude = p0.latitude
+        selectedLongitude = p0.longitude
     }
 }
