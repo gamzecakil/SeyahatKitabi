@@ -1,6 +1,7 @@
 package com.gamzeuysal.seyahatkitabimharitalarroomdatabase
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
@@ -35,6 +36,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     //verilen izni yakalama  --> sistemde izinler string olarak saklanıyor.-->ACCESS_FINE_LOCATION"
     private lateinit var permissionLauncher : ActivityResultLauncher<String>
     private val TAG = "MapsActivity"
+    //Güncel konumu almayı bir kez çalıştırma
+    private lateinit var sharedPreferences: SharedPreferences
+    private var trackBoolean : Boolean? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +56,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         ActivityCompat.requestPermissions(this,permission,0)
          */
 
+        sharedPreferences = this.getSharedPreferences("com.gamzeuysal.seyahatkitabimharitalarroomdatabase", MODE_PRIVATE)
+        trackBoolean = false
+
+
         //sistem ilk başladığnda gerekli izinler var mı diye kontrol et
         registerLauncher()
     }
@@ -66,13 +74,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         //kullanıcı konum degistirdikce sen de degistir
         locationListener = object : LocationListener {
             override fun onLocationChanged(location : Location) {
-                 Log.d(TAG,"LOCATION : $location")
-                 val userLocation = LatLng(location.latitude,location.longitude)
-                // mMap.addMarker(MarkerOptions().position(userLocation).title("Guncel Konum"))
-                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation,15f))
 
+                //on Location changed uygulama açıldığında sadece bir kez çalıştırılacak.
+                trackBoolean = sharedPreferences.getBoolean("trackBoolean",false)
 
-
+                if(!trackBoolean!!)
+                {
+                    Log.d(TAG,"LOCATION : $location")
+                    val userLocation = LatLng(location.latitude,location.longitude)
+                    // mMap.addMarker(MarkerOptions().position(userLocation).title("Guncel Konum"))
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation,15f))
+                    sharedPreferences.edit().putBoolean("trackBoolean",true).apply()
+                }
             }
         }
         //ilk önce gerekli izin verilmiş mi kontrol edelim.
@@ -106,6 +119,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 val lastUserLocation = LatLng(lastLocation.latitude,lastLocation.longitude)
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastUserLocation,15f))
             }
+
+            //konumu etkinleştirme
+            mMap.isMyLocationEnabled = true
 
         }
 
@@ -142,6 +158,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                   val lastUserLocation = LatLng(lastLocation.latitude,lastLocation.longitude)
                   mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastUserLocation,15f))
               }
+
+              //konumu etkinleştirme
+              mMap.isMyLocationEnabled = true
 
           }else{
               //permission  denied
