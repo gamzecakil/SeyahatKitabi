@@ -16,3 +16,4 @@ local.properties
 app/src/main/res/values/strings.xml
 .idea/vcs.xml
 .idea/gradle.xml
+app/src/main/res/values/string.xml
