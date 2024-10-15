@@ -13,5 +13,5 @@ data class Place(
     @ColumnInfo(name="longitude")
     var longitude : Double) {
     @PrimaryKey(autoGenerate = true)
-    val uid :Int = 0
+    var uid :Int = 0
 }

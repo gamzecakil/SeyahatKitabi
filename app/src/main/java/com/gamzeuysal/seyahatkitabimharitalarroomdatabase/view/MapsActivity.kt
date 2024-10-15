@@ -1,4 +1,4 @@
-package com.gamzeuysal.seyahatkitabimharitalarroomdatabase
+package com.gamzeuysal.seyahatkitabimharitalarroomdatabase.view
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -6,7 +6,6 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
-import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -14,9 +13,10 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.room.Room
+import com.gamzeuysal.seyahatkitabimharitalarroomdatabase.R
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -25,6 +25,9 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.gamzeuysal.seyahatkitabimharitalarroomdatabase.databinding.ActivityMapsBinding
+import com.gamzeuysal.seyahatkitabimharitalarroomdatabase.model.Place
+import com.gamzeuysal.seyahatkitabimharitalarroomdatabase.roomdb.PlaceDao
+import com.gamzeuysal.seyahatkitabimharitalarroomdatabase.roomdb.PlaceDatabase
 import com.google.android.material.snackbar.Snackbar
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback ,GoogleMap.OnMapLongClickListener{
@@ -43,6 +46,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback ,GoogleMap.OnMapLon
     //marker eklenen konumu alma
     private var selectedLatitude : Double? = null
     private var selectedLongitude :Double? = null
+    //room database
+    private lateinit var db : PlaceDatabase
+    private lateinit var placeDao : PlaceDao
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,6 +75,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback ,GoogleMap.OnMapLon
 
         //sistem ilk başladığnda gerekli izinler var mı diye kontrol et
         registerLauncher()
+
+        //room database
+        db = Room.databaseBuilder(applicationContext,PlaceDatabase::class.java,"Places").build()
+        placeDao = db.placeDao()
+
     }
 
 
@@ -195,7 +206,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback ,GoogleMap.OnMapLon
     }
     fun save(view: View)
     {
-
+        if(selectedLatitude != null && selectedLongitude != null)
+        {
+            val place = Place(binding.placeEditText.text.toString(),selectedLatitude!!,selectedLongitude!!)
+            placeDao.insert(place)
+        }
     }
     fun delete(view:View)
     {
