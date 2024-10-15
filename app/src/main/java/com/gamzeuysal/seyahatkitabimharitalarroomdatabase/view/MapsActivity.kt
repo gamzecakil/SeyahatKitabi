@@ -1,6 +1,7 @@
 package com.gamzeuysal.seyahatkitabimharitalarroomdatabase.view
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.Location
@@ -13,6 +14,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.MainThread
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.room.Room
@@ -29,6 +31,11 @@ import com.gamzeuysal.seyahatkitabimharitalarroomdatabase.model.Place
 import com.gamzeuysal.seyahatkitabimharitalarroomdatabase.roomdb.PlaceDao
 import com.gamzeuysal.seyahatkitabimharitalarroomdatabase.roomdb.PlaceDatabase
 import com.google.android.material.snackbar.Snackbar
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Scheduler
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.schedulers.Schedulers
+import io.reactivex.rxjava3.schedulers.Schedulers.io
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback ,GoogleMap.OnMapLongClickListener{
 
@@ -49,6 +56,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback ,GoogleMap.OnMapLon
     //room database
     private lateinit var db : PlaceDatabase
     private lateinit var placeDao : PlaceDao
+
+    //Composite Disposable
+    val compositeDisposable = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,7 +87,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback ,GoogleMap.OnMapLon
         registerLauncher()
 
         //room database
-        db = Room.databaseBuilder(applicationContext,PlaceDatabase::class.java,"Places").build()
+        db = Room.databaseBuilder(applicationContext,PlaceDatabase::class.java,"Places")
+            //.allowMainThreadQueries()
+            .build()
         placeDao = db.placeDao()
 
     }
@@ -206,14 +218,32 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback ,GoogleMap.OnMapLon
     }
     fun save(view: View)
     {
+
+       //Main Thread UI, Default -> CPU,IO Thread Internet/Database
         if(selectedLatitude != null && selectedLongitude != null)
         {
             val place = Place(binding.placeEditText.text.toString(),selectedLatitude!!,selectedLongitude!!)
-            placeDao.insert(place)
+            compositeDisposable.add(
+                placeDao.insert(place).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(this::handleResponse)
+            )
         }
+    }
+    private fun handleResponse()
+    {
+        val intent = Intent(this,MainActivity::class.java)
+        //acık olan tüm activityleri kapat
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        startActivity(intent)
+
+        startActivity(intent)
     }
     fun delete(view:View)
     {
 
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        compositeDisposable.clear()
     }
 }
