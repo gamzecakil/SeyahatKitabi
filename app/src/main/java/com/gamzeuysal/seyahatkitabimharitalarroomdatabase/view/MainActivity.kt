@@ -1,10 +1,11 @@
-package com.gamzeuysal.seyahatkitabimharitalarroomdatabase
+package com.gamzeuysal.seyahatkitabimharitalarroomdatabase.view
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import com.gamzeuysal.seyahatkitabimharitalarroomdatabase.R
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         if(item.itemId == R.id.add_place)
         {
             //Yeni yer eklendiyse intent ile diğer aktiviteye gidecegiz
-            val intent = Intent(this,MapsActivity::class.java)
+            val intent = Intent(this, MapsActivity::class.java)
             startActivity(intent)
         }
         return super.onContextItemSelected(item)

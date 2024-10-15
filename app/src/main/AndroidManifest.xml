@@ -19,7 +19,7 @@
         android:theme="@style/Theme.SeyahatKitabimHaritalarRoomDatabase"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name=".view.MainActivity"
             android:exported="true">
             <meta-data
                 android:name="android.app.lib_name"
@@ -42,7 +42,7 @@
             android:value="@string/APİ_KEY" />
 
         <activity
-            android:name=".MapsActivity"
+            android:name=".view.MapsActivity"
             android:exported="true"
             android:label="@string/title_activity_maps">
             <intent-filter>
