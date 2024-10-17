@@ -57,6 +57,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback ,GoogleMap.OnMapLon
     private lateinit var db : PlaceDatabase
     private lateinit var placeDao : PlaceDao
 
+    var placeFromMain : Place? = null
+
     //Composite Disposable
     val compositeDisposable = CompositeDisposable()
 
@@ -92,6 +94,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback ,GoogleMap.OnMapLon
             .build()
         placeDao = db.placeDao()
 
+        binding.saveButton.isEnabled = false
+
     }
 
 
@@ -100,13 +104,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback ,GoogleMap.OnMapLon
 
         mMap.setOnMapLongClickListener (this) //GoogleMap.OnMapLongClickListener implementasyonu ile benim Activityde listener oldu.this --> MapsActivity
 
-        val intent = intent
-        val info = intent.getStringExtra("info")
+         val intent = intent
+         val info = intent.getStringExtra("info")
 
-        if(info == "new")
-        {
-            binding.saveButton.visibility = View.VISIBLE
-            binding.deleteButton.visibility = View.GONE
+         if(info == "new")
+         {
+             binding.saveButton.visibility = View.VISIBLE
+             binding.deleteButton.visibility = View.GONE //Invisible da görünmez olur ama yerini tutar Gone ise görünmez olur ama yerini tutmaz
 
             //casting
             locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -170,8 +174,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback ,GoogleMap.OnMapLon
         }else
         {
             //room databaseden  veriler cekilecek(edittext e doldurulacak) && silmek istersek veriyi silecek
-            binding.saveButton.visibility = View.GONE
-            binding.deleteButton.visibility = View.VISIBLE
+            mMap.clear()
+
+            placeFromMain = intent.getSerializableExtra("selectedPlace") as Place
+
+            placeFromMain?.let {
+                //tıklanan yere haritayı çevirecegiz
+                val latLng = LatLng(it.latitude,it.longitude)
+                mMap.addMarker(MarkerOptions().position(latLng).title(it.name))
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,15f))
+
+                binding.placeEditText.setText(it.name.toString())
+                binding.saveButton.visibility = View.GONE
+                binding.deleteButton.visibility = View.VISIBLE
+            }
+
         }
 
 
@@ -233,6 +250,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback ,GoogleMap.OnMapLon
         
         selectedLatitude = p0.latitude
         selectedLongitude = p0.longitude
+
+        binding.saveButton.isEnabled = true
     }
     fun save(view: View)
     {
