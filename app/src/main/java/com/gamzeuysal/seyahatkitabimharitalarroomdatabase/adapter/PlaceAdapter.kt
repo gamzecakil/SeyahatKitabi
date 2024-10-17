@@ -25,6 +25,9 @@ class PlaceAdapter( val placeList:List<Place>): RecyclerView.Adapter<PlaceAdapte
         //item clicked
         holder.itemView.setOnClickListener {
              val intent = Intent(holder.itemView.context,MapsActivity::class.java)
+             //seçilen item i gönderelim.
+             intent.putExtra("selectedPlace",placeList.get(position))//Serializable
+             intent.putExtra("info","old")
              holder.itemView.context.startActivity(intent)
         }
     }
