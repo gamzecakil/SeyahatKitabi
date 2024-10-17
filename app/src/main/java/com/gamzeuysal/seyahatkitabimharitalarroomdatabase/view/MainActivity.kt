@@ -23,13 +23,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     //menu item larına tıklama
-    override fun onContextItemSelected(item: MenuItem): Boolean {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if(item.itemId == R.id.add_place)
         {
             //Yeni yer eklendiyse intent ile diğer aktiviteye gidecegiz
             val intent = Intent(this, MapsActivity::class.java)
+            intent.putExtra("info","new")
             startActivity(intent)
         }
-        return super.onContextItemSelected(item)
+        return super.onOptionsItemSelected(item)
     }
 }
