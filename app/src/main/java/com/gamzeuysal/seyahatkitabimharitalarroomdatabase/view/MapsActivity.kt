@@ -262,6 +262,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback ,GoogleMap.OnMapLon
             val place = Place(binding.placeEditText.text.toString(),selectedLatitude!!,selectedLongitude!!)
             //Threading
             compositeDisposable.add(
+                //ekledikten sonra Main Activity'ye dön
                 placeDao.insert(place).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(this::handleResponse)
             )
         }
@@ -277,7 +278,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback ,GoogleMap.OnMapLon
     }
     fun delete(view:View)
     {
-
+        placeFromMain?.let {
+            compositeDisposable.add(
+                //ekledikten sonra Main Activity'ye dön
+                placeDao.delete(it).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(this::handleResponse)
+            )
+        }
     }
 
     override fun onDestroy() {
