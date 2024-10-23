@@ -173,7 +173,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback ,GoogleMap.OnMapLon
 
         }else
         {
-            //room databaseden  veriler cekilecek(edittext e doldurulacak) && silmek istersek veriyi silecek
+            //seçilen recyclerView deki item alınacak ve bilgileri gösterilecek-->recyclerView  adapter da alıyorum
             mMap.clear()
 
             placeFromMain = intent.getSerializableExtra("selectedPlace") as Place
